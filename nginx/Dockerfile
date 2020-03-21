@@ -1,0 +1,5 @@
+FROM nginx:1.17.8-alpine
+
+ARG USER=www-data
+ARG USER_ID=1000
+ARG GROUP_ID=1000

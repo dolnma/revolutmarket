@@ -1,0 +1,1 @@
+make certbot-prod DOMAINS="esvitilna.cz www.esvitilna.cz" EMAIL=info@esvitilna.cz

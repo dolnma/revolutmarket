@@ -1,0 +1,12 @@
+# dependencies
+.idea
+mysql/mariadb
+mysql/initdb
+jira
+backup
+nginx/prod/log
+nginx/dev/log
+ssl/prod/logs
+# domains
+web
+

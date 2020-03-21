@@ -1,0 +1,123 @@
+version: '3.7'
+services:
+#  db:
+#    image: mariadb:10.4
+#    container_name: mariadb
+#    restart: always
+#    volumes:
+#      - ./mysql/initdb/:/docker-entrypoint-initdb.d
+#      - ./mysql/mariadb:/var/lib/mysql
+#    environment:
+#      - MYSQL_ROOT_PASSWORD=root
+#      - MYSQL_DATABASE=lemp_db
+#      - MYSQL_USER=lemp
+#      - MYSQL_PASSWORD=lemp
+#    command:
+#      'mysqld --innodb-flush-method=fsync'
+
+  php:
+    image: php:7.4.2-fpm-alpine3.11
+    container_name: php-fpm
+    restart: always
+    networks:
+      - nginx_net
+    volumes:
+      - ./web/:/var/www
+      - ./php/logs:/var/log
+      - ./php:/usr/local/etc/php
+    expose:
+      - "9000"
+#
+  nginx:
+    build:
+      context: ./nginx/
+      args:
+        USER: "${USER}"
+        USER_ID: "${USER_ID}"
+        GROUP_ID: "${GROUP_ID}"
+    container_name: nginx
+    networks:
+      - nginx_net
+    restart: unless-stopped
+    volumes:
+      - ./web/:/var/www
+#      - ./nginx:/etc/nginx
+      - ./nginx/prod/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/prod/conf:/etc/nginx/conf:ro
+      - ./nginx/prod/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/prod/sites-available:/etc/nginx/sites-available:ro
+      - ./nginx/prod/sites-enabled:/etc/nginx/sites-enabled:ro
+      - ./nginx/prod/log:/var/log/nginx
+      - ./ssl/prod/conf:/etc/letsencrypt
+      - ./ssl/prod/www:/var/www/letsencrypt
+      - ./ssl/prod/logs:/var/log/letsencrypt
+    ports:
+      - "80:80"
+      - "443:443"
+#    command: /bin/sh -c "while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g 'daemon off;'"
+#
+#  pma:
+#    image: phpmyadmin/phpmyadmin
+#    container_name: phpmyadmin
+#    restart: always
+#    ports:
+#      - "8000:80"
+
+  certbot:
+    build:
+      context: ./ssl/prod
+      args:
+        USER: "${USER}"
+        USER_ID: "${USER_ID}"
+        GROUP_ID: "${GROUP_ID}"
+    container_name: certbot
+    networks:
+      - nginx_net
+    volumes:
+      - ./ssl/prod/conf:/etc/letsencrypt
+      - ./ssl/prod/www:/var/www/letsencrypt
+      - ./ssl/prod/logs:/var/log/letsencrypt
+    restart: unless-stopped
+    entrypoint: /bin/sh -c "trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;"
+    command: tail -F anything
+    tty: true
+#    depends_on:
+#      - nginx
+
+#  adminer:
+#    image: adminer
+#    container_name: adminer
+#    restart: always
+#    volumes:
+#      - ./adminer/adminer.css:/var/www/html/adminer.css
+#    ports:
+#      - 8080:8080
+
+#  jira:
+#    depends_on:
+#      - db
+#    container_name: jira
+#    restart: always
+#    image: cptactionhank/atlassian-jira:latest
+#    ports:
+#      - '8080:8080'
+#    volumes:
+#      - ./jira/:/var/atlassian/jira  # JIRA_HOME
+
+#  mdolnicek.eu:
+#    build:
+#      context: ./web/mdolnicek.eu/
+#      args:
+#        USER: "${USER}"
+#        USER_ID: "${USER_ID}"
+#        GROUP_ID: "${GROUP_ID}"
+#    container_name: mdolnicek.eu
+#    networks:
+#      - nginx_net
+#    volumes:
+#      - ./web/mdolnicek.eu:/var/www/mdolnicek.eu
+#    command: tail -F anything
+
+networks:
+  nginx_net:
+    name: nginx_net

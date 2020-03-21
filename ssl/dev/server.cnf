@@ -1,0 +1,34 @@
+# OpenSSL configuration for end-entity cert
+
+[ req ]
+
+prompt             = no
+string_mask        = default
+
+# The size of the keys in bits:
+default_bits       = 2048
+distinguished_name = req_distinguished_name
+
+x509_extensions    = x509_ext
+
+[ req_distinguished_name ]
+
+# Note that the following are in 'reverse order' to what you'd expect to see.
+
+countryName = cz
+organizationName = Dolnma
+commonName = mdolnicek.xxx
+
+[ x509_ext ]
+
+keyUsage=critical,digitalSignature,keyAgreement
+
+subjectAltName = @alt_names
+
+# Multiple Alternate Names are possible
+[alt_names]
+DNS.1 = mdolnicek.xxx
+DNS.2 = www.mdolnicek.xxx
+DNS.3 = beeonline.mdolnicek.xxx
+DNS.4 = hrsummit.mdolnicek.xxx
+DNS.5 = performio.mdolnicek.xxx
